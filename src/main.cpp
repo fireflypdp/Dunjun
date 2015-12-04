@@ -1,14 +1,17 @@
 #include <Dunjun/Common.h>
+#include <Dunjun/ShaderProgram.h>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 #include <iostream>
+#include <cmath>
+#include <string>
 
 GLOBAL const int g_windowWidth = 854;
 GLOBAL const int g_windowHeight = 480;
 
-void glfwHints()
+INTERNAL void glfwHints()
 {
 	// OpenGL 2.0 - GLSL 1.10 (OpenGL Shading Language)
 	// OpenGL 2.1 - GLSL 1.20
@@ -43,65 +46,34 @@ int main(int argc, char** argv)
 
 	glewInit();
 
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+
 	f32 vertices[] = {
-		+0.0f, +0.5f, // vertex 1
-		-0.5f, -0.5f, // vertex 2
-		+0.5f, -0.5f, // vertex 3
+		//	x		y		r		g		b
+		-0.5f,	-0.5f,	 1.0f,	 0.0f,	 0.0f, // vertex 0
+		+0.5f,	-0.5f,	 0.0f,	 1.0f,	 0.0f, // vertex 1
+		-0.5f,	+0.5f,	 0.0f,	 0.0f,	 1.0f, // vertex 2
+		+0.5f,	+0.5f,	 1.0f,	 1.0f,	 1.0f, // vertex 3
 	};
 
 	GLuint vbo; // vertex buffer object (puts vertices onto the graphics card memory)
 	glGenBuffers(1, &vbo); // create 1 vbo
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
 	/* Draw type usage
 	GL_STATIC_DRAW - vertex data will only be uploaded once (useful for world/background/etc)
 	GL_DYNAMIC_DRAW - vertex data changed but drawn more often than changed
 	GL_STREAM_DRAW - vertex data changed almost every frame (UI?  something constantly animating)
 	*/
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	const char * vertexShaderText = {
-		"#version 120\n"
-		"\n"
-		"attribute vec2 position;"
-		"void main()"
-		"{"
-		"	gl_Position = vec4(position, 0.0, 1.0);"
-		"}"
-	};
-
-	const char * fragmentShaderText = {
-		"#version 120\n"
-		"\n"
-		"void main()"
-		"{"
-		"	gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);"
-		"}"
-	};
-
-	// vertex shader passes in vertex data during rendering
-	// OpenGL handles shape assembly from vertex data and rasterization (pixellation of data)
-	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexShaderText, nullptr);
-	glCompileShader(vertexShader);
-
-	// fragment shader colors rasterized data during rendering
-	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderText, nullptr);
-	glCompileShader(fragmentShader);
-
-	// create a shader program to link vertex and fragment shaders together
-	GLuint shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-
-	// set up attribute locations so we can bind it later
-	glBindAttribLocation(shaderProgram, 0, "position");
-
-	// link all shaders together into this program
-	glLinkProgram(shaderProgram);
-
-	glUseProgram(shaderProgram);
+	ShaderProgram shaderProgram;
+	shaderProgram.AttachShaderFromFile(ShaderType::Vertex, "data/shaders/default.vert.glsl");
+	shaderProgram.AttachShaderFromFile(ShaderType::Fragment, "data/shaders/default.frag.glsl");
+	shaderProgram.BindAttributeLocation(0, "vertPosition");
+	shaderProgram.BindAttributeLocation(1, "vertColor");
+	shaderProgram.Link();
+	shaderProgram.Use();
 
 	bool isRunning = true;
 	bool isFullscreen = false;
@@ -112,13 +84,16 @@ int main(int argc, char** argv)
 
 		// Draw things
 		{
-			glEnableVertexAttribArray(0); // "position"
+			glEnableVertexAttribArray(0); // "vertPosition"
+			glEnableVertexAttribArray(1); // "vertColor"
 
-			glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr); // define "position"
+			glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(f32), 0);
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(f32), (const GLvoid*)(2 * sizeof(f32)));
 
-			glDrawArrays(GL_TRIANGLES, 0, 3);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-			glDisableVertexAttribArray(0); // "position"
+			glDisableVertexAttribArray(0); // "vertPosition"
+			glDisableVertexAttribArray(1); // "vertColor"
 		}
 
 		glfwSwapBuffers(window);
