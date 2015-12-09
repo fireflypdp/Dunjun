@@ -125,12 +125,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Dunjun\Image.cpp" />
     <ClCompile Include="src\Dunjun\ShaderProgram.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Dunjun\Common.h" />
+    <ClInclude Include="include\Dunjun\Image.h" />
+    <ClInclude Include="include\Dunjun\OpenGL.h" />
     <ClInclude Include="include\Dunjun\ShaderProgram.h" />
+    <ClInclude Include="include\Dunjun\Texture.h" />
     <ClInclude Include="include\Dunjun\Types.h" />
   </ItemGroup>
   <ItemGroup>

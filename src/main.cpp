@@ -1,10 +1,9 @@
 #include <Dunjun/Common.h>
+#include <Dunjun/Image.h>
 #include <Dunjun/ShaderProgram.h>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb/stb_image.h>
 
 #include <iostream>
 #include <cmath>
@@ -86,9 +85,8 @@ int main(int argc, char** argv)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	unsigned char * image;
-	s32 width, height, comp;
-	image = stbi_load("data/textures/peter_jpgAvatar.jpg", &width, &height, &comp, 0);
+	Image image;
+	image.LoadFromFile("data/textures/peter_jpgAvatar.jpg");
 
 	// checkerboard pattern
 	f32 pixels[] = {
@@ -96,12 +94,10 @@ int main(int argc, char** argv)
 		0, 1, 0,	1, 1, 0,
 	};
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.GetWidth(), image.GetHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, image.GetPixelPtr());
 
 	glActiveTexture(GL_TEXTURE0);
 	shaderProgram.SetUniform("uniTex", 0);
-
-	stbi_image_free(image);
 
 	bool isRunning = true;
 	bool isFullscreen = false;
