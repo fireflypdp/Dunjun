@@ -3,6 +3,14 @@
 
 #include "Dunjun/Types.h"
 
+#include <cassert>
+#include <fstream>
+#include <functional>
+#include <iostream>
+#include <memory>
+#include <stack>
+#include <stdexcept>
+
 #define GLOBAL static
 #define INTERNAL static
 #define LOCAL_PERSIST static

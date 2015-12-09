@@ -1,6 +1,6 @@
 #include <Dunjun/Common.h>
-#include <Dunjun/Image.h>
 #include <Dunjun/ShaderProgram.h>
+#include <Dunjun/Texture.h>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -52,10 +52,10 @@ int main(int argc, char** argv)
 
 	f32 vertices[] = {
 		//	x		y		r		g		b		s		t
-		-0.5f,	-0.5f,	 1.0f,	 0.0f,	 0.0f,	0.0f,	0.0f, // vertex 0
-		+0.5f,	-0.5f,	 0.0f,	 1.0f,	 0.0f,	1.0f,	0.0f, // vertex 1
-		-0.5f,	+0.5f,	 0.0f,	 0.0f,	 1.0f,	0.0f,	1.0f, // vertex 2
-		+0.5f,	+0.5f,	 1.0f,	 1.0f,	 1.0f,	1.0f,	1.0f, // vertex 3
+		-0.5f,	-0.5f,	 1.0f,	 0.0f,	 0.0f,	0.0f,	1.0f, // vertex 0
+		+0.5f,	-0.5f,	 0.0f,	 1.0f,	 0.0f,	1.0f,	1.0f, // vertex 1
+		-0.5f,	+0.5f,	 0.0f,	 0.0f,	 1.0f,	0.0f,	0.0f, // vertex 2
+		+0.5f,	+0.5f,	 1.0f,	 1.0f,	 1.0f,	1.0f,	0.0f, // vertex 3
 	};
 
 	GLuint vbo; // vertex buffer object (puts vertices onto the graphics card memory)
@@ -77,26 +77,9 @@ int main(int argc, char** argv)
 	shaderProgram.Link();
 	shaderProgram.Use();
 
-	GLuint tex;
-	glGenTextures(1, &tex);
-	glBindTexture(GL_TEXTURE_2D, tex);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	Image image;
-	image.LoadFromFile("data/textures/peter_jpgAvatar.jpg");
-
-	// checkerboard pattern
-	f32 pixels[] = {
-		0, 0, 1,	1, 0, 0,
-		0, 1, 0,	1, 1, 0,
-	};
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.GetWidth(), image.GetHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, image.GetPixelPtr());
-
-	glActiveTexture(GL_TEXTURE0);
+	Texture tex;
+	tex.LoadFromFile("data/textures/peter_jpgAvatar.jpg");
+	tex.Bind(0);
 	shaderProgram.SetUniform("uniTex", 0);
 
 	bool isRunning = true;

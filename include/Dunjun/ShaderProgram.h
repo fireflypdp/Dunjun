@@ -2,6 +2,7 @@
 #define DUNJUN_SHADERPROGRAM_H
 
 #include <Dunjun/Common.h>
+#include <Dunjun/NonCopyable.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -15,7 +16,7 @@ namespace Dunjun
 		Fragment,
 	};
 
-	class ShaderProgram
+	class ShaderProgram : public NonCopyable
 	{
 	public:
 		ShaderProgram();
