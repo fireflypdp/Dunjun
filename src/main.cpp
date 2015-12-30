@@ -8,9 +8,66 @@
 #include <iostream>
 #include <cmath>
 #include <string>
+#include <sstream>
+
+using namespace Dunjun;
+
+class Clock
+{
+public:
+	Clock()
+		: m_startTime(glfwGetTime())
+	{
+	}
+
+	f64 GetElapsedTime() const
+	{
+		return glfwGetTime() - m_startTime;
+	}
+
+	f64 Restart()
+	{
+		f64 now = glfwGetTime();
+		f64 elapsed = GetElapsedTime();
+		m_startTime = now;
+		return elapsed;
+	}
+
+private:
+	f64 m_startTime;
+};
+
+class TickCounter
+{
+public:
+	bool Update(f64 frequency)
+	{
+		bool reset = false;
+		if (m_clock.GetElapsedTime() >= frequency)
+		{
+			m_tickRate = static_cast<usize>(m_tick / frequency);
+			m_tick = 0;
+			reset = true;
+			m_clock.Restart();
+		}
+
+		++m_tick;
+		return reset;
+	}
+
+	inline usize GetTickRate() const { return m_tickRate; }
+
+private:
+	usize m_tick = 0;
+	usize m_tickRate = 0;
+	Clock m_clock;
+};
 
 GLOBAL const int g_windowWidth = 854;
 GLOBAL const int g_windowHeight = 480;
+
+// todo: ppascoal - config settings
+GLOBAL const bool CONFIG_VSYNC = true;
 
 INTERNAL void glfwHints()
 {
@@ -24,9 +81,63 @@ INTERNAL void glfwHints()
 	// OpenGL v2.1
 	glfwWindowHint(GLFW_VERSION_MAJOR, 2);
 	glfwWindowHint(GLFW_VERSION_MINOR, 1);
+	if (CONFIG_VSYNC)
+		glfwSwapInterval(1);
 }
 
-using namespace Dunjun;
+INTERNAL void Render()
+{
+	glClearColor(0.5f, 0.69f, 1.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	glEnableVertexAttribArray(0); // "vertPosition"
+	glEnableVertexAttribArray(1); // "vertColor"
+	glEnableVertexAttribArray(2); // "vertTexCoord"
+
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(f32), 0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(f32), (const GLvoid*)(2 * sizeof(f32)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(f32), (const GLvoid*)(5 * sizeof(f32)));
+
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+	glDisableVertexAttribArray(0); // "vertPosition"
+	glDisableVertexAttribArray(1); // "vertColor"
+	glDisableVertexAttribArray(2); // "vertTexCoord"
+}
+
+INTERNAL void HandleInput(GLFWwindow * window, bool & isRunning, bool & isFullscreen)
+{
+	if (glfwWindowShouldClose(window) || glfwGetKey(window, GLFW_KEY_ESCAPE))
+		isRunning = false;
+
+	if (glfwGetKey(window, GLFW_KEY_F11))
+	{
+		isFullscreen = !isFullscreen;
+
+		GLFWwindow * newWindow = nullptr;
+		glfwHints();
+
+		if (isFullscreen)
+		{
+			s32 count;
+			const GLFWvidmode * modes = glfwGetVideoModes(glfwGetPrimaryMonitor(), &count);
+			if (modes)
+			{
+				// count - 1 = highest resolution (fullscreen)
+				newWindow = glfwCreateWindow(modes[count - 1].width, modes[count - 1].height, "Dunjun", glfwGetPrimaryMonitor(), window);
+			}
+		}
+		else
+			newWindow = glfwCreateWindow(g_windowWidth, g_windowHeight, "Dunjun", nullptr, window);
+
+		if (newWindow)
+		{
+			glfwDestroyWindow(window);
+			window = newWindow;
+			glfwMakeContextCurrent(window);
+		}
+	}
+}
 
 int main(int argc, char** argv)
 {
@@ -69,12 +180,21 @@ int main(int argc, char** argv)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
 	ShaderProgram shaderProgram;
-	shaderProgram.AttachShaderFromFile(ShaderType::Vertex, "data/shaders/default.vert.glsl");
-	shaderProgram.AttachShaderFromFile(ShaderType::Fragment, "data/shaders/default.frag.glsl");
+	if (!shaderProgram.AttachShaderFromFile(ShaderType::Vertex, "data/shaders/default.vert.glsl"))
+	{
+		throw std::runtime_error(shaderProgram.GetErrorLog());
+	}
+	if (!shaderProgram.AttachShaderFromFile(ShaderType::Fragment, "data/shaders/default.frag.glsl"))
+	{
+		throw std::runtime_error(shaderProgram.GetErrorLog());
+	}
 	shaderProgram.BindAttributeLocation(0, "vertPosition");
 	shaderProgram.BindAttributeLocation(1, "vertColor");
 	shaderProgram.BindAttributeLocation(2, "vertTexCoord");
-	shaderProgram.Link();
+	if (!shaderProgram.Link())
+	{
+		throw std::runtime_error(shaderProgram.GetErrorLog());
+	}
 	shaderProgram.Use();
 
 	Texture tex;
@@ -84,67 +204,33 @@ int main(int argc, char** argv)
 
 	bool isRunning = true;
 	bool isFullscreen = false;
+
+	TickCounter tc;
+
 	while (isRunning)
 	{
+		// reshape
 		{
 			s32 viewportWidth, viewportHeight;
 			glfwGetWindowSize(window, &viewportWidth, &viewportHeight);
 			glViewport(0, 0, viewportWidth, viewportHeight);
 		}
 
-		glClearColor(0.5f, 0.69f, 1.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
-
-		// Draw things
+		std::stringstream titleStream;
+		if (tc.Update(0.5f))
 		{
-			glEnableVertexAttribArray(0); // "vertPosition"
-			glEnableVertexAttribArray(1); // "vertColor"
-			glEnableVertexAttribArray(2); // "vertTexCoord"
-
-			glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(f32), 0);
-			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(f32), (const GLvoid*)(2 * sizeof(f32)));
-			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(f32), (const GLvoid*)(5 * sizeof(f32)));
-
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-			glDisableVertexAttribArray(0); // "vertPosition"
-			glDisableVertexAttribArray(1); // "vertColor"
-			glDisableVertexAttribArray(2); // "vertTexCoord"
+			titleStream.str("");
+			titleStream.clear();
+			titleStream << "Dunjun - " << 1000.0 / tc.GetTickRate() << " ms";
+			glfwSetWindowTitle(window, titleStream.str().c_str());
 		}
+
+		Render();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
-		if (glfwWindowShouldClose(window) || glfwGetKey(window, GLFW_KEY_ESCAPE))
-			isRunning = false;
-
-		if (glfwGetKey(window, GLFW_KEY_F11))
-		{
-			isFullscreen = !isFullscreen;
-
-			GLFWwindow * newWindow = nullptr;
-			glfwHints();
-
-			if (isFullscreen)
-			{
-				s32 count;
-				const GLFWvidmode * modes = glfwGetVideoModes(glfwGetPrimaryMonitor(), &count);
-				if (modes)
-				{
-					// count - 1 = highest resolution (fullscreen)
-					newWindow = glfwCreateWindow(modes[count - 1].width, modes[count - 1].height, "Dunjun", glfwGetPrimaryMonitor(), window);
-				}
-			}
-			else
-				newWindow = glfwCreateWindow(g_windowWidth, g_windowHeight, "Dunjun", nullptr, window);
-
-			if (newWindow)
-			{
-				glfwDestroyWindow(window);
-				window = newWindow;
-				glfwMakeContextCurrent(window);
-			}
-		}
+		HandleInput(window, isRunning, isFullscreen);
 	}
 
 	glfwDestroyWindow(window);
