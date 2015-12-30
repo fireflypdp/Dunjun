@@ -132,6 +132,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Dunjun\Clock.h" />
+    <ClInclude Include="include\Dunjun\Color.h" />
     <ClInclude Include="include\Dunjun\Common.h" />
     <ClInclude Include="include\Dunjun\Image.h" />
     <ClInclude Include="include\Dunjun\Math.h" />

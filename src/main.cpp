@@ -1,5 +1,6 @@
 #include <Dunjun/Common.h>
 #include <Dunjun/Math.h>
+#include <Dunjun/Color.h>
 #include <Dunjun/ShaderProgram.h>
 #include <Dunjun/Texture.h>
 #include <Dunjun/TickCounter.h>
@@ -19,6 +20,13 @@ GLOBAL const int g_windowHeight = 480;
 
 // todo: ppascoal - config settings
 GLOBAL const b08 CONFIG_VSYNC = true;
+
+struct Vertex
+{
+	Vector2 position;
+	Color color;
+	Vector2 texCoord;
+};
 
 INTERNAL void glfwHints()
 {
@@ -43,9 +51,9 @@ INTERNAL void Render()
 	glEnableVertexAttribArray(1); // "vertColor"
 	glEnableVertexAttribArray(2); // "vertTexCoord"
 
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(f32), 0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(f32), (const GLvoid*)(2 * sizeof(f32)));
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(f32), (const GLvoid*)(5 * sizeof(f32)));
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+	glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), (const GLvoid*)(sizeof(Vector2)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)(sizeof(Vector2) + sizeof(Color)));
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
@@ -88,13 +96,6 @@ INTERNAL void HandleInput(GLFWwindow * window, b08 & isRunning, b08 & isFullscre
 	}
 }
 
-struct Vertex
-{
-	Vector2 position;
-	Vector3 color;
-	Vector2 texCoord;
-};
-
 int main(int argc, char** argv)
 {
 	GLFWwindow * window;
@@ -120,11 +121,11 @@ int main(int argc, char** argv)
 	glCullFace(GL_BACK);
 
 	Vertex vertices[] = {
-		//	x		y			r		g		b		s		t
-		{{-0.5f,	-0.5f},	 {1.0f,	 0.0f,	 0.0f},	{0.0f,	1.0f}}, // vertex 0
-		{{+0.5f,	-0.5f},	 {0.0f,	 1.0f,	 0.0f},	{1.0f,	1.0f}}, // vertex 1
-		{{-0.5f,	+0.5f},	 {0.0f,	 0.0f,	 1.0f},	{0.0f,	0.0f}}, // vertex 2
-		{{+0.5f,	+0.5f},	 {1.0f,	 1.0f,	 1.0f},	{1.0f,	0.0f}}, // vertex 3
+		//	x		y			r	g	b		a		s		t
+		{{-0.5f,	-0.5f},	 {255,  0,  0,   255},		{0.0f,	1.0f}}, // vertex 0
+		{{+0.5f,	-0.5f},	 {0,  255,  0,   255},		{1.0f,	1.0f}}, // vertex 1
+		{{-0.5f,	+0.5f},	 {0,    0,  255, 255},		{0.0f,	0.0f}}, // vertex 2
+		{{+0.5f,	+0.5f},	 {255, 255, 255, 255},		{1.0f,	0.0f}}, // vertex 3
 	};
 
 	GLuint vbo; // vertex buffer object (puts vertices onto the graphics card memory)
