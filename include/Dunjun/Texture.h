@@ -13,8 +13,8 @@ namespace Dunjun
 		Texture();
 		Texture(const Image & image, GLint minMagFilter = GL_LINEAR, GLint wrapMode = GL_CLAMP_TO_EDGE);
 
-		bool LoadFromFile(const char * filename, GLint minMagFilter = GL_LINEAR, GLint wrapMode = GL_CLAMP_TO_EDGE);
-		bool LoadFromImage(const Image & image, GLint minMagFilter = GL_LINEAR, GLint wrapMode = GL_CLAMP_TO_EDGE);
+		b08 LoadFromFile(const char * filename, GLint minMagFilter = GL_LINEAR, GLint wrapMode = GL_CLAMP_TO_EDGE);
+		b08 LoadFromImage(const Image & image, GLint minMagFilter = GL_LINEAR, GLint wrapMode = GL_CLAMP_TO_EDGE);
 
 		virtual ~Texture();
 

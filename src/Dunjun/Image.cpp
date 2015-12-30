@@ -60,7 +60,7 @@ namespace Dunjun
 
 	/////////////////////////////////////////////////////////
 
-	bool Image::LoadFromFile(const char * filename)
+	b08 Image::LoadFromFile(const char * filename)
 	{
 		int width, height, format;
 		u08 * pixels = stbi_load(filename, &width, &height, &format, 0);
@@ -83,7 +83,7 @@ namespace Dunjun
 
 	/////////////////////////////////////////////////////////
 
-	bool Image::LoadFromMemory(u32 width, u32 height, ImageFormat format, const u08 * pixels)
+	b08 Image::LoadFromMemory(u32 width, u32 height, ImageFormat format, const u08 * pixels)
 	{
 		if (width == 0)
 		{
@@ -194,7 +194,7 @@ namespace Dunjun
 
 	/////////////////////////////////////////////////////////
 
-	GLint Image::GetGLEnumFromFormat(ImageFormat format, bool srgb)
+	GLint Image::GetGLEnumFromFormat(ImageFormat format, b08 srgb)
 	{
 		switch (format)
 		{

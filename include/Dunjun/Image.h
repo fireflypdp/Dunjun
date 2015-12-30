@@ -24,8 +24,8 @@ namespace Dunjun
 		Image& operator=(const Image & other);
 		~Image();
 
-		bool LoadFromFile(const char * filename);
-		bool LoadFromMemory(u32 width, u32 height, ImageFormat format, const u08 * pixels);
+		b08 LoadFromFile(const char * filename);
+		b08 LoadFromMemory(u32 width, u32 height, ImageFormat format, const u08 * pixels);
 
 		inline u32 GetWidth() const { return m_width; }
 		inline u32 GetHeight() const { return m_height; }
@@ -41,7 +41,7 @@ namespace Dunjun
 		void copyRectFromImage(const Image & src, u32 srcCol, u32 srcRow, u32 destCol, u32 destRow, u32 width, u32 height);
 
 		GLOBAL ImageFormat GetFormatFromGLEnum(GLint format);
-		GLOBAL GLint GetGLEnumFromFormat(ImageFormat format, bool srgb);
+		GLOBAL GLint GetGLEnumFromFormat(ImageFormat format, b08 srgb);
 
 	private:
 		ImageFormat m_format;

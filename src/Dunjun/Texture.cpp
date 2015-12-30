@@ -28,7 +28,7 @@ namespace Dunjun
 
 	/////////////////////////////////////////////////////////
 
-	bool Texture::LoadFromFile(const char * filename, GLint minMagFilter, GLint wrapMode)
+	b08 Texture::LoadFromFile(const char * filename, GLint minMagFilter, GLint wrapMode)
 	{
 		Image image;
 		if (!image.LoadFromFile(filename))
@@ -40,7 +40,7 @@ namespace Dunjun
 
 	/////////////////////////////////////////////////////////
 
-	bool Texture::LoadFromImage(const Image & image, GLint minMagFilter, GLint wrapMode)
+	b08 Texture::LoadFromImage(const Image & image, GLint minMagFilter, GLint wrapMode)
 	{
 		m_width = (GLfloat)image.GetWidth();
 		m_height = (GLfloat)image.GetHeight();

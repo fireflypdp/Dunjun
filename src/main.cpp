@@ -1,6 +1,8 @@
 #include <Dunjun/Common.h>
+#include <Dunjun/Math.h>
 #include <Dunjun/ShaderProgram.h>
 #include <Dunjun/Texture.h>
+#include <Dunjun/TickCounter.h>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -12,62 +14,11 @@
 
 using namespace Dunjun;
 
-class Clock
-{
-public:
-	Clock()
-		: m_startTime(glfwGetTime())
-	{
-	}
-
-	f64 GetElapsedTime() const
-	{
-		return glfwGetTime() - m_startTime;
-	}
-
-	f64 Restart()
-	{
-		f64 now = glfwGetTime();
-		f64 elapsed = GetElapsedTime();
-		m_startTime = now;
-		return elapsed;
-	}
-
-private:
-	f64 m_startTime;
-};
-
-class TickCounter
-{
-public:
-	bool Update(f64 frequency)
-	{
-		bool reset = false;
-		if (m_clock.GetElapsedTime() >= frequency)
-		{
-			m_tickRate = static_cast<usize>(m_tick / frequency);
-			m_tick = 0;
-			reset = true;
-			m_clock.Restart();
-		}
-
-		++m_tick;
-		return reset;
-	}
-
-	inline usize GetTickRate() const { return m_tickRate; }
-
-private:
-	usize m_tick = 0;
-	usize m_tickRate = 0;
-	Clock m_clock;
-};
-
 GLOBAL const int g_windowWidth = 854;
 GLOBAL const int g_windowHeight = 480;
 
 // todo: ppascoal - config settings
-GLOBAL const bool CONFIG_VSYNC = true;
+GLOBAL const b08 CONFIG_VSYNC = true;
 
 INTERNAL void glfwHints()
 {
@@ -81,8 +32,6 @@ INTERNAL void glfwHints()
 	// OpenGL v2.1
 	glfwWindowHint(GLFW_VERSION_MAJOR, 2);
 	glfwWindowHint(GLFW_VERSION_MINOR, 1);
-	if (CONFIG_VSYNC)
-		glfwSwapInterval(1);
 }
 
 INTERNAL void Render()
@@ -105,7 +54,7 @@ INTERNAL void Render()
 	glDisableVertexAttribArray(2); // "vertTexCoord"
 }
 
-INTERNAL void HandleInput(GLFWwindow * window, bool & isRunning, bool & isFullscreen)
+INTERNAL void HandleInput(GLFWwindow * window, b08 & isRunning, b08 & isFullscreen)
 {
 	if (glfwWindowShouldClose(window) || glfwGetKey(window, GLFW_KEY_ESCAPE))
 		isRunning = false;
@@ -139,6 +88,13 @@ INTERNAL void HandleInput(GLFWwindow * window, bool & isRunning, bool & isFullsc
 	}
 }
 
+struct Vertex
+{
+	Vector2 position;
+	Vector3 color;
+	Vector2 texCoord;
+};
+
 int main(int argc, char** argv)
 {
 	GLFWwindow * window;
@@ -155,18 +111,20 @@ int main(int argc, char** argv)
 	}
 
 	glfwMakeContextCurrent(window);
+	if (CONFIG_VSYNC)
+		glfwSwapInterval(1);
 
 	glewInit();
 
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
-	f32 vertices[] = {
-		//	x		y		r		g		b		s		t
-		-0.5f,	-0.5f,	 1.0f,	 0.0f,	 0.0f,	0.0f,	1.0f, // vertex 0
-		+0.5f,	-0.5f,	 0.0f,	 1.0f,	 0.0f,	1.0f,	1.0f, // vertex 1
-		-0.5f,	+0.5f,	 0.0f,	 0.0f,	 1.0f,	0.0f,	0.0f, // vertex 2
-		+0.5f,	+0.5f,	 1.0f,	 1.0f,	 1.0f,	1.0f,	0.0f, // vertex 3
+	Vertex vertices[] = {
+		//	x		y			r		g		b		s		t
+		{{-0.5f,	-0.5f},	 {1.0f,	 0.0f,	 0.0f},	{0.0f,	1.0f}}, // vertex 0
+		{{+0.5f,	-0.5f},	 {0.0f,	 1.0f,	 0.0f},	{1.0f,	1.0f}}, // vertex 1
+		{{-0.5f,	+0.5f},	 {0.0f,	 0.0f,	 1.0f},	{0.0f,	0.0f}}, // vertex 2
+		{{+0.5f,	+0.5f},	 {1.0f,	 1.0f,	 1.0f},	{1.0f,	0.0f}}, // vertex 3
 	};
 
 	GLuint vbo; // vertex buffer object (puts vertices onto the graphics card memory)
@@ -202,10 +160,11 @@ int main(int argc, char** argv)
 	tex.Bind(0);
 	shaderProgram.SetUniform("uniTex", 0);
 
-	bool isRunning = true;
-	bool isFullscreen = false;
+	b08 isRunning = true;
+	b08 isFullscreen = false;
 
 	TickCounter tc;
+	Clock frameClock;
 
 	while (isRunning)
 	{
@@ -231,6 +190,10 @@ int main(int argc, char** argv)
 		glfwPollEvents();
 
 		HandleInput(window, isRunning, isFullscreen);
+
+		// throttle framerate
+		while (frameClock.GetElapsedTime() < 1.0f / 240.0f) {}
+		frameClock.Restart();
 	}
 
 	glfwDestroyWindow(window);

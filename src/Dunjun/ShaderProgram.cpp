@@ -51,7 +51,7 @@ namespace Dunjun
 
 	///////////////////////////////////////////////////////////
 
-	bool ShaderProgram::AttachShaderFromFile(ShaderType type, const std::string & filename) 
+	b08 ShaderProgram::AttachShaderFromFile(ShaderType type, const std::string & filename)
 	{
 		std::string source = stringFromFile(filename);
 		return AttachShaderFromMemory(type, source);
@@ -59,7 +59,7 @@ namespace Dunjun
 
 	///////////////////////////////////////////////////////////
 
-	bool ShaderProgram::AttachShaderFromMemory(ShaderType type, const std::string & source) 
+	b08 ShaderProgram::AttachShaderFromMemory(ShaderType type, const std::string & source)
 	{
 		if (!m_object)
 			m_object = glCreateProgram();
@@ -111,7 +111,7 @@ namespace Dunjun
 
 	///////////////////////////////////////////////////////////
 
-	bool ShaderProgram::IsInUse() const
+	b08 ShaderProgram::IsInUse() const
 	{
 		GLint currentProgram = 0;
 		glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
@@ -131,7 +131,7 @@ namespace Dunjun
 
 	///////////////////////////////////////////////////////////
 
-	bool ShaderProgram::Link()
+	b08 ShaderProgram::Link()
 	{
 		if (!IsLinked())
 		{
@@ -165,7 +165,7 @@ namespace Dunjun
 
 	///////////////////////////////////////////////////////////
 
-	bool ShaderProgram::IsLinked() const
+	b08 ShaderProgram::IsLinked() const
 	{
 		return m_isLinked;
 	}
@@ -238,7 +238,7 @@ namespace Dunjun
 
 	///////////////////////////////////////////////////////////
 
-	void ShaderProgram::SetUniform(const GLchar * name, bool x) 
+	void ShaderProgram::SetUniform(const GLchar * name, b08 x)
 	{
 		glUniform1i(GetUniformLocation(name), static_cast<s32>(x));
 	}

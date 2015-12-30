@@ -22,15 +22,15 @@ namespace Dunjun
 		ShaderProgram();
 		virtual ~ShaderProgram();
 
-		bool AttachShaderFromFile(ShaderType type, const std::string & filename);
-		bool AttachShaderFromMemory(ShaderType type, const std::string & source);
+		b08 AttachShaderFromFile(ShaderType type, const std::string & filename);
+		b08 AttachShaderFromMemory(ShaderType type, const std::string & source);
 
 		void Use() const;
-		bool IsInUse() const;
+		b08 IsInUse() const;
 		void StopUsing() const;
 
-		bool Link();
-		bool IsLinked() const;
+		b08 Link();
+		b08 IsLinked() const;
 
 		void BindAttributeLocation(GLuint location, const GLchar * name);
 		
@@ -43,14 +43,14 @@ namespace Dunjun
 		void SetUniform(const GLchar * name, f32 x, f32 y, f32 z, f32 w);
 		void SetUniform(const GLchar * name, u32 x);
 		void SetUniform(const GLchar * name, s32 x);
-		void SetUniform(const GLchar * name, bool x);
+		void SetUniform(const GLchar * name, b08 x);
 
 		inline GLuint GetObject() const { return m_object; }
 		inline const std::string & GetErrorLog() const { return m_errorLog; }
 
 	private:
 		GLuint m_object;
-		bool m_isLinked;
+		b08 m_isLinked;
 		std::string m_errorLog;
 	};
 } // namespace Dunjun

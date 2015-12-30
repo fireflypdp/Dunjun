@@ -19,6 +19,9 @@ namespace Dunjun
 	using f32 = float;
 	using f64 = double;
 
+	using b08 = bool;
+	using b32 = s32;
+
 	using intPtr = std::intptr_t;
 	using uintPtr = std::uintptr_t;
 
