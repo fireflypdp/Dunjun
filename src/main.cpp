@@ -167,6 +167,15 @@ int main(int argc, char** argv)
 	TickCounter tc;
 	Clock frameClock;
 
+	{
+		Matrix4 m1(1);
+		Matrix4 m2(2);
+
+		std::cout << m1 + m2 << "\n";
+		std::cout << m1 * m2 << "\n";
+		std::cout << inverse(m2) << "\n";
+	}
+
 	while (isRunning)
 	{
 		// reshape
